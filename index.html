@@ -1,0 +1,221 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>3D Background Prototype</title>
+	<style>
+	
+		body {
+			padding: 0;
+			margin: 0;
+			color: #333333;
+			font-family: sans-serif;
+			font-size: 14px;
+			height: 100%;
+			background: rgba(20, 20, 20, 1);
+		}
+	
+		#container {
+			width: 100%;
+			height: 100%;
+			position: fixed;
+			z-index: 0;
+			background: url(img/luftaufnahme_insel_mainau.jpg) no-repeat 0 -110px;
+		}
+		
+		#content {
+			position: absolute;
+			z-index: 10;
+			width: 500px;
+			top: 50px;
+			padding-bottom: 50px;
+		}
+		
+		#content div {
+			background-color: rgba(255, 255, 255, 0.8);
+			padding: 16px;
+		}
+		
+		#content h1 {
+			margin-top: 0;
+		}
+		
+		#menu {
+			background: inherit;
+			position: absolute;
+/*			position: fixed; */
+			color: #cccccc;
+			width: 500px;
+			height: 50px;
+			font-size: 20px;
+			z-index: 20;
+		}
+		
+		#menu div {
+			float: left;
+			margin: 15px 0 0 16px;
+			cursor: pointer;
+/*			-moz-transform: scaleX(0.8);
+			-moz-transform-origin: left center;
+			-moz-transform: rotate(-45deg); */
+		}
+		
+		#footer {
+			position: fixed;
+			bottom: 0;
+			width: 100%;
+			height: 50px;
+			background: inherit;
+			z-index: 20;
+		}
+		
+		.three-d {
+			position: absolute;
+			background-color: rgba(255, 255, 255, 0.8);
+			padding: 16px;
+			top: 0;
+			left: 0;
+		}
+		
+		#hello {
+			font-size: 20px;
+		}
+		
+		#def {
+			width: 400px;
+			top: -75px;
+			font-size: 13px;
+		}
+		
+		#phil {
+			width: 150px;
+			top: -50px;
+		}
+	</style>
+</head>
+<body>
+
+<script id="shader-vs" type="x-shader/x-vertex">
+	varying vec4 vPosition;
+
+    void main(void) {
+		vec4 affinePos = vec4(position, 1.0);
+		vPosition = objectMatrix * affinePos;
+		gl_Position = projectionMatrix * modelViewMatrix * affinePos;
+    }
+</script>
+
+<script id="shader-fs" type="x-shader/x-fragment">
+    #ifdef GL_ES
+    precision highp float;
+    #endif
+
+	varying vec4 vPosition;
+
+    uniform sampler2D texture;
+
+	// texture projection matrix
+	const mat4 texProjMatrix = mat4(
+        -2.1875, 
+        0.0, 
+        0.0, 
+        0.0, 
+        0.0, 
+        -3.28125, 
+        0.0, 
+        0.0, 
+        0.0, 
+        0.0, 
+        1.0, 
+        -1.0, 
+        0.0, 
+        0.0, 
+        0.0, 
+        0.0
+	) *	mat4( 	// texture projection transform matrix
+        -1.0, 
+        0.0, 
+        0.0, 
+        0.0, 
+        0.0, 
+        0.9934136271476746, 
+        0.1145835891366005, 
+        0.0, 
+        0.0, 
+        -0.1145835891366005, 
+        0.9934136271476746, 
+        0.0, 
+        0.0, 
+        -8.788300514221191, 
+        -11.079972267150879, 
+        1.0
+	);
+
+    void main(void) {
+		vec4 projHom = texProjMatrix * vPosition;
+		float fac = 0.5 / projHom.w;
+		vec2 texCoord = vec2(projHom) * fac + vec2(0.5, 0.5);
+        gl_FragColor = texture2D(texture, texCoord);
+    }
+</script>
+
+	<div id="container"></div>
+	
+	<div id="menu">
+		<div id="home">Home</div>
+		<div id="team">Team</div>
+		<div id="projekte">Projekte</div>
+		<div id="news">News</div>
+	</div>
+
+<!-- 	
+	<div id="footer"></div>
+	<div id="content">
+	
+		<div id="text1">
+			<h1>Home</h1>
+		
+			<p>Er hörte leise Schritte hinter sich. Das bedeutete nichts Gutes. Wer würde ihm schon folgen, spät in der Nacht und dazu noch in dieser engen Gasse mitten im übel beleumundeten Hafenviertel? Gerade jetzt, wo er das Ding seines Lebens gedreht hatte und mit der Beute verschwinden wollte! Hatte einer seiner zahllosen Kollegen dieselbe Idee gehabt, ihn beobachtet und abgewartet, um ihn nun um die Früchte seiner Arbeit zu erleichtern? Oder gehörten die Schritte hinter ihm zu einem der unzähligen Gesetzeshüter dieser Stadt, und die stählerne Acht um seine Handgelenke würde gleich zuschnappen? Er konnte die Aufforderung stehen zu bleiben schon hören. Gehetzt sah er sich um.</p>
+			
+			<p>Plötzlich erblickte er den schmalen Durchgang. Blitzartig drehte er sich nach rechts und verschwand zwischen den beiden Gebäuden. Beinahe wäre er dabei über den umgestürzten Mülleimer gefallen, der mitten im Weg lag. Er versuchte, sich in der Dunkelheit seinen Weg zu ertasten und erstarrte: Anscheinend gab es keinen anderen Ausweg aus diesem kleinen Hof als den Durchgang, durch den er gekommen war. Die Schritte wurden lauter und lauter, er sah eine dunkle Gestalt um die Ecke biegen. Fieberhaft irrten seine Augen durch die nächtliche Dunkelheit und suchten einen Ausweg. War jetzt wirklich alles vorbei, waren alle Mühe und alle Vorbereitungen umsonst?</p>
+			
+			<p>Er presste sich ganz eng an die Wand hinter ihm und hoffte, der Verfolger würde ihn übersehen, als plötzlich neben ihm mit kaum wahrnehmbarem Quietschen eine Tür im nächtlichen Wind hin und her schwang. Könnte dieses der flehentlich herbeigesehnte Ausweg aus seinem Dilemma sein? Langsam bewegte er sich auf die offene Tür zu, immer dicht an die Mauer gepresst. Würde diese Tür seine Rettung werden? Er hörte leise Schritte hinter sich. Das bedeutete nichts Gutes. Wer würde ihm schon folgen, spät in der Nacht und dazu noch in dieser engen Gasse mitten im übel beleumundeten Hafenviertel? Gerade jetzt, wo er das Ding seines Lebens gedreht hatte und mit der Beute verschwinden wollte!</p>
+			
+			<p>Hatte einer seiner zahllosen Kollegen dieselbe Idee gehabt, ihn beobachtet und abgewartet, um ihn nun um die Früchte seiner Arbeit zu erleichtern? Oder gehörten die Schritte hinter ihm zu einem der unzähligen Gesetzeshüter dieser Stadt, und die stählerne Acht um seine Handgelenke würde gleich zuschnappen? Er konnte die Aufforderung stehen zu bleiben schon hören. Gehetzt sah er sich um. Plötzlich erblickte er den schmalen Durchgang. Blitzartig drehte er sich nach rechts und verschwand zwischen den beiden Gebäuden. Beinahe wäre er dabei über den umgestürzten Mülleimer gefallen, der mitten im Weg lag.</p>
+			
+			<p>Er versuchte, sich in der Dunkelheit seinen Weg zu ertasten und erstarrte: Anscheinend gab es keinen anderen Ausweg aus diesem kleinen Hof als den Durchgang, durch den er gekommen war. Die Schritte wurden lauter und lauter, er sah eine dunkle Gestalt um die Ecke biegen. Fieberhaft irrten seine Augen durch die nächtliche Dunkelheit und suchten einen Ausweg. War jetzt wirklich alles vorbei, waren alle Mühe und alle Vorbereitungen umsonst? Er presste sich ganz eng an die Wand hinter ihm und hoffte, der Verfolger würde ihn übersehen, als plötzlich neben ihm mit kaum wahrnehmbarem Quietschen eine Tür im nächtlichen Wind hin und her schwang. Könnte dieses der flehentlich herbeigesehnte Ausweg aus seinem Dilemma sein?</p>
+			
+			<p>Langsam bewegte er sich auf die offene Tür zu, immer dicht an die Mauer gepresst. Würde diese Tür seine Rettung werden? Er hörte leise Schritte hinter sich. Das bedeutete nichts Gutes. Wer würde ihm schon folgen, spät in der Nacht und dazu noch in dieser engen Gasse mitten im übel beleumundeten Hafenviertel? Gerade jetzt, wo er das Ding seines Lebens gedreht hatte und mit der Beute verschwinden wollte! Hatte einer seiner zahllosen Kollegen dieselbe Idee gehabt, ihn beobachtet und abgewartet, um ihn nun um die Früchte seiner Arbeit zu erleichtern? Oder gehörten die Schritte hinter ihm zu einem der unzähligen Gesetzeshüter dieser Stadt, und die stählerne Acht um seine Handgelenke würde gleich zuschnappen? Er konnte die Aufforderung stehen zu bleiben schon hören.</p>
+			
+			<p>Gehetzt sah er sich um. Plötzlich erblickte er den schmalen Durchgang. Blitzartig drehte er sich nach rechts und verschwand zwischen den beiden Gebäuden. Beinahe wäre er dabei über den umgestürzten Mülleimer gefallen, der mitten im Weg lag. Er versuchte, sich in der Dunkelheit seinen Weg zu ertasten und erstarrte: Anscheinend gab es keinen anderen Ausweg aus diesem kleinen Hof als den Durchgang, durch den er gekommen war. Die Schritte wurden lauter und lauter, er sah eine dunkle Gestalt um die Ecke biegen. Fieberhaft irrten seine Augen durch die nächtliche Dunkelheit und suchten einen Ausweg. War jetzt wirklich alles vorbei, waren alle Mühe und alle Vorbereitungen umsonst?</p>
+			
+			<p>Er presste sich ganz eng an die Wand hinter ihm und hoffte, der Verfolger würde ihn übersehen, als plötzlich neben ihm mit kaum wahrnehmbarem Quietschen eine Tür im nächtlichen Wind hin und her schwang. Könnte dieses der flehentlich herbeigesehnte Ausweg aus seinem Dilemma sein? Langsam bewegte er sich auf die offene Tür zu, immer dicht an die Mauer gepresst. Würde diese Tür seine Rettung werden? Er hörte leise Schritte hinter sich. Das bedeutete nichts Gutes. Wer würde ihm schon folgen, spät in der Nacht und dazu noch in dieser engen Gasse mitten im übel beleumundeten Hafenviertel? Gerade jetzt, wo er das Ding seines Lebens gedreht hatte und mit der Beute verschwinden wollte! Hatte einer seiner zahllosen Kollegen dieselbe Idee gehabt, ihn beobachtet und abgewartet, um ihn nun um die Früchte seiner Arbeit zu erleichtern? Oder gehörten die Schritte hinter ihm zu einem der unzähligen Gesetzeshüter dieser Stadt, und die stählerne Acht um seine Handgelenke würde gleich zuschnappen? Er konnte die Aufforderung stehen zu bleiben schon hören. Gehetzt sah er sich um. Plötzlich erblickte er den schmalen Durchgang. Blitzartig drehte er sich nach rechts und verschwand zwischen den beiden Gebäuden. Beinahe wäre er dabei über den umgestürzten Mülleimer gefallen, der mitten im Weg lag. Er versuchte, sich in der Dunkelheit seinen Weg zu ertasten und erstarrte: Anscheinend gab es keinen anderen Ausweg aus diesem kleinen Hof als den Durchgang, durch den er gekommen war. Die Schritte wurden lauter und</p>
+		</div>
+	</div>
+ -->	
+ 
+ 	<div class="three-d pos_9p5_7_-34p466" id="hello">
+		Hallo &mdash;<br />
+		wir sind<br />
+		Programmierer/<br />
+		Filmemacher/<br />
+		Designer<br />
+		&mdash; wir sind Südsicht!
+ 	</div>
+
+ 	<div class="three-d pos_-15_7_-100" id="def">
+		Unter Südsicht verstehen wir nicht nur den schönen Ausblick auf den Bodensee und die Alpen, sondern auch vorausschauendes Denken und Handeln. Wir Südsichtler navigieren uns seit nunmehr 10 Jahren durch die teils seichten, teils sturmgepeitschten Gewässer der Gestaltungsbranche.
+	</div>
+	
+ 	<div class="three-d pos_-15_7_-50" id="phil">
+		<div style="color: #555555; font-weight: bold;">Philosophie</div>
+		Allen Binsenweisheiten zum Trotz: Wir wollen die Welt nicht besser machen, sondern begnügen uns damit, sie ein wenig zu verschönern.
+	</div>	
+	
+</body>
+<script type="text/javascript" src="js/Three.js"></script>
+<script type="text/javascript" src="js/RequestAnimationFrame.js"></script>
+<script type="text/javascript" src="js/mootools.js"></script>
+<script type="text/javascript" src="js/grid.js"></script>
+<script type="text/javascript" src="js/main.js"></script>
+</html>
