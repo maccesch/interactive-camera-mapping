@@ -7,9 +7,13 @@ class Grid
 
 	
 	addTriangle: (face3) ->
+		b = (new THREE.Vector3).sub(face3.c, face3.a)
+		c = (new THREE.Vector3).sub(face3.b, face3.a)
+		face3.normal.cross(c, b)
+		
 		# discard all triangles that are not relevant for reflection:
 		# if they are completely under water or are almost parallel to the water (pointing upwards)
-		if face3.a.y < @waterLevel and face3.b.y < @waterLevel and face3.c.y < @waterLevel or face3.normal.y > 0.9
+		if face3.a.y < @waterLevel and face3.b.y < @waterLevel and face3.c.y < @waterLevel or face3.normal.y > 0.1
 			return
 		
 		@triangles.push(face3)
@@ -28,13 +32,11 @@ class Grid
 			if @intervalZ[1] < point.z
 				@intervalZ[1] = point.z
 				
-		@preCalcAcc(face3)
+		@preCalcAcc(face3, b, c)
 
 
-	preCalcAcc: (face3) ->
-		b = (new THREE.Vector3).sub(face3.c, face3.a)
-		c = (new THREE.Vector3).sub(face3.b, face3.a)
-		N = (new THREE.Vector3).cross(c, b)
+	preCalcAcc: (face3, b, c) ->
+		N = face3.normal
 		
 		face3.n_u = N.x / N.z
 		face3.n_v = N.y / N.z
