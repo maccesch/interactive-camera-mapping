@@ -28,13 +28,13 @@ class Grid
 			if @intervalZ[1] < point.z
 				@intervalZ[1] = point.z
 				
-		preCalcAcc(face3)
+		@preCalcAcc(face3)
 
 
 	preCalcAcc: (face3) ->
-		b = (new Vector3).sub(face3.c, face3.a)
-		c = (new Vector3).sub(face3.b, face3.a)
-		N = (new Vector3).cross(c, b)
+		b = (new THREE.Vector3).sub(face3.c, face3.a)
+		c = (new THREE.Vector3).sub(face3.b, face3.a)
+		N = (new THREE.Vector3).cross(c, b)
 		
 		face3.n_u = N.x / N.z
 		face3.n_v = N.y / N.z
@@ -126,7 +126,7 @@ class Grid
 		const int TRIANGLE_NUM = #{ @triangles.length };
 		
 		TriAccel accs[TRIANGLE_NUM];
-		#{ @trianglesToShader }
+		#{ @trianglesToShader() }
 		
 		const float MIN_DIST = 0.01;
 		const float MAX_DIST = 100.0;

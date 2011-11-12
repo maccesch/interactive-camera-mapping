@@ -1,5 +1,5 @@
-(function() {
   var Grid;
+(function() {
   Grid = (function() {
     function Grid(waterLevel) {
       this.waterLevel = waterLevel != null ? waterLevel : 0.0;
@@ -33,13 +33,13 @@
           this.intervalZ[1] = point.z;
         }
       }
-      return preCalcAcc(face3);
+      return this.preCalcAcc(face3);
     };
     Grid.prototype.preCalcAcc = function(face3) {
       var N, b, c, div;
-      b = (new Vector3).sub(face3.c, face3.a);
-      c = (new Vector3).sub(face3.b, face3.a);
-      N = (new Vector3).cross(c, b);
+      b = (new THREE.Vector3).sub(face3.c, face3.a);
+      c = (new THREE.Vector3).sub(face3.b, face3.a);
+      N = (new THREE.Vector3).cross(c, b);
       face3.n_u = N.x / N.z;
       face3.n_v = N.y / N.z;
       face3.n_d = N.dot(face3.a) / N.z;
@@ -111,7 +111,7 @@
       return _results;
     };
     Grid.prototype.fragmentShader = function() {
-      return "// Fast ray triangle intersection algorithm after PhD from Ingo Wald\n\nstruct TriAccel\n{\n	// plane:\n	float n_u; //!< == normal.u / normal.k\n	float n_v; //!< == normal.v / normal.k\n	float n_d; //!< constant of plane equation\n	\n	// line equation for line ac\n	float b_nu;\n	float b_nv;\n	float b_d;\n	\n	// line equation for line ab\n	float c_nu;\n	float c_nv;\n	float c_d;\n};\n\nconst int TRIANGLE_NUM = " + this.triangles.length + ";\n\nTriAccel accs[TRIANGLE_NUM];\n" + this.trianglesToShader + "\n\nconst float MIN_DIST = 0.01;\nconst float MAX_DIST = 100.0;\n\nbool intersect(in TriAccel acc, in vec3 rayOrg, in vec3 rayDir, out float lambda, out float mue) {\n	// we always project onto XY Plane\n	const float nd = 1.0 / (rayDir.z + acc.n_u * rayDir.x + acc.n_v * rayDir.y);\n	const float f = (acc.n_d - rayOrg.z - acc.n_u * rayOrg.x - acc.n_v * rayOrg.y) * nd;\n	\n	// check for valid distance\n	if (!(MAX_DIST > f && f > MIN_DIST)) {\n		return false;\n	}\n	\n	// compute hitpoint positions on uv plane\n	const float hu = rayOrg.x + f * rayDir.x;\n	const float hv = rayOrg.y + f * rayDir.y;\n	\n	// check first barycentric coordinate\n	lambda = hu * acc.b_nu + hv * acc.b_nv + acc.b_d;\n	if (lambda < 0.0) {\n		return false;\n	}\n	\n	// check second barycentric coordinate\n	mue = hu * acc.c_nu + hv * acc.c_nv + acc.c_d;\n	if (mue < 0.0) {\n		return false;\n	}\n\n	// check third barycentric coordinate\n	if (lambda + mue > 1.0) {\n		return false;\n	}\n	\n	// we have a valid hitpoint here. return values.\n	return true;\n}\n\n// returns the color of the fragment\nvec4 traceRay(vec3 rayOrg, vec3 rayDir) {\n	float beta, gamma;\n	\n	for (int i = 0; i < TRIANGLE_NUM; ++i) {\n		\n		if (intersect(accs[i], rayOrg, rayDir, beta, gamma)) {\n			return vec4(1.0, 0.0, 0.0, 1.0);\n		}\n	}\n	\n	return vec4(0.3, 0.3, 0.3, 1.0);\n}";
+      return "// Fast ray triangle intersection algorithm after PhD from Ingo Wald\n\nstruct TriAccel\n{\n	// plane:\n	float n_u; //!< == normal.u / normal.k\n	float n_v; //!< == normal.v / normal.k\n	float n_d; //!< constant of plane equation\n	\n	// line equation for line ac\n	float b_nu;\n	float b_nv;\n	float b_d;\n	\n	// line equation for line ab\n	float c_nu;\n	float c_nv;\n	float c_d;\n};\n\nconst int TRIANGLE_NUM = " + this.triangles.length + ";\n\nTriAccel accs[TRIANGLE_NUM];\n" + (this.trianglesToShader()) + "\n\nconst float MIN_DIST = 0.01;\nconst float MAX_DIST = 100.0;\n\nbool intersect(in TriAccel acc, in vec3 rayOrg, in vec3 rayDir, out float lambda, out float mue) {\n	// we always project onto XY Plane\n	const float nd = 1.0 / (rayDir.z + acc.n_u * rayDir.x + acc.n_v * rayDir.y);\n	const float f = (acc.n_d - rayOrg.z - acc.n_u * rayOrg.x - acc.n_v * rayOrg.y) * nd;\n	\n	// check for valid distance\n	if (!(MAX_DIST > f && f > MIN_DIST)) {\n		return false;\n	}\n	\n	// compute hitpoint positions on uv plane\n	const float hu = rayOrg.x + f * rayDir.x;\n	const float hv = rayOrg.y + f * rayDir.y;\n	\n	// check first barycentric coordinate\n	lambda = hu * acc.b_nu + hv * acc.b_nv + acc.b_d;\n	if (lambda < 0.0) {\n		return false;\n	}\n	\n	// check second barycentric coordinate\n	mue = hu * acc.c_nu + hv * acc.c_nv + acc.c_d;\n	if (mue < 0.0) {\n		return false;\n	}\n\n	// check third barycentric coordinate\n	if (lambda + mue > 1.0) {\n		return false;\n	}\n	\n	// we have a valid hitpoint here. return values.\n	return true;\n}\n\n// returns the color of the fragment\nvec4 traceRay(vec3 rayOrg, vec3 rayDir) {\n	float beta, gamma;\n	\n	for (int i = 0; i < TRIANGLE_NUM; ++i) {\n		\n		if (intersect(accs[i], rayOrg, rayDir, beta, gamma)) {\n			return vec4(1.0, 0.0, 0.0, 1.0);\n		}\n	}\n	\n	return vec4(0.3, 0.3, 0.3, 1.0);\n}";
     };
     return Grid;
   })();
